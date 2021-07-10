@@ -2,9 +2,22 @@ from tqdm import tqdm
 from constants import START_PAD, END_PAD, field_values_dictionary
 
 
+def arrange_corpus(train_path, dev_path, test_path, PADDING_START_END_length, pos_tags_learning):
+    corpus_words_train, corpus_tags_train, indeces_untagged_words_train = read_data(train_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning)
+    corpus_words_dev, corpus_tags_dev, indeces_untagged_words_dev = read_data(dev_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning, start_index = len(corpus_tags_train))
+    corpus_words = corpus_words_train + corpus_words_dev
+    corpus_tags = corpus_tags_train + corpus_tags_dev
+    indeces_untagged_words = indeces_untagged_words_train + indeces_untagged_words_dev
+    corpus_words_test, corpus_tags_test, indeces_untagged_words_test = read_data(test_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning, start_index = len(corpus_tags))
+    corpus_words += corpus_words_test
+    corpus_tags += corpus_tags_test
+    indeces_untagged_words +=indeces_untagged_words_test
+    return corpus_words, corpus_tags, indeces_untagged_words
 
 
-def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning):
+
+
+def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning, start_index=0):
     """
        Splits the corpus_words data into list of sentences.
        Also collects all the unique lemmas.
@@ -16,15 +29,15 @@ def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning):
                 and the unique lemmas in the corpus_words
        """
     flag_end_sentence = False
+    indeces_untagged_words = list()
 
     corpus_words = list()
-    corpus_tags = list()
+    corpus_tags_gold = list()
 
     corpus_words += ([START_PAD] * PADDING_START_END_length)
-    corpus_tags += ([START_PAD] * PADDING_START_END_length)
+    corpus_tags_gold += ([START_PAD] * PADDING_START_END_length)
 
     with open(corpus_file_path, 'r', encoding='utf-8') as corpus_file:
-        sentence = list()
 
         # read the file line by line
         # with this reading method we load little components of the corpus_words
@@ -44,8 +57,8 @@ def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning):
                 flag_end_sentence = True
                 corpus_words += ([END_PAD] * PADDING_START_END_length)
                 corpus_words += ([START_PAD] * PADDING_START_END_length)
-                corpus_tags += ([END_PAD] * PADDING_START_END_length)
-                corpus_tags += ([START_PAD] * PADDING_START_END_length)
+                corpus_tags_gold += ([END_PAD] * PADDING_START_END_length)
+                corpus_tags_gold += ([START_PAD] * PADDING_START_END_length)
 
             # a normal line containing a word fields
             else:
@@ -54,8 +67,10 @@ def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning):
                 field_values = line.split('\t')
 
                 corpus_words.append(field_values[field_values_dictionary["LEMMA"]])
-                corpus_tags.append(field_values[field_values_dictionary["POSTAG"]])
+                corpus_tags_gold.append(field_values[field_values_dictionary["POSTAG"]])
                 flag_end_sentence = False
+                if field_values[field_values_dictionary["POSTAG"]] in pos_tags_learning:
+                    indeces_untagged_words.append(len(corpus_tags_gold)-1 + start_index)
 
 
-    return corpus_words[:-2], corpus_tags[:-2]
+    return corpus_words[:-2], corpus_tags_gold[:-2], indeces_untagged_words
