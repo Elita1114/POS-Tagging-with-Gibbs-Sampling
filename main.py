@@ -9,16 +9,7 @@ from file_utils import *
 from gibbs_sampling import GibbsSampler, GibbsSamplingArguments
 from types import Emissions, Transitions
 
-
-def normalize_vector(vector: Union[Counter, dict]) -> Counter:
-    """Normalize a vector represented as a python dictionary."""
-    values_sum = sum(vector.values())
-
-    normalized_vector = Counter({
-        vector[tag] / values_sum for tag in vector.keys()
-    })
-
-    return normalized_vector
+from math_utils import normalize
 
 
 def normalize_emissions(emission_counter: Emissions) -> Emissions:
@@ -26,7 +17,7 @@ def normalize_emissions(emission_counter: Emissions) -> Emissions:
     emission_prob = defaultdict(Counter)
 
     for word in emission_counter.keys():
-        emission_prob[word] = normalize_vector(emission_counter[word])
+        emission_prob[word] = normalize(emission_counter[word])
 
     return emission_prob
 
@@ -53,7 +44,7 @@ def build_transitions(corpus_tags, transition_length) -> Tuple[Transitions, Tran
             )
         ] += 1
 
-    transition_prob = normalize_vector(transition_counter)
+    transition_prob = normalize(transition_counter)
     return transition_counter, transition_prob
 
 
