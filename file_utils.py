@@ -3,20 +3,28 @@ from constants import START_PAD, END_PAD, field_values_dictionary
 
 
 def arrange_corpus(train_path, dev_path, test_path, PADDING_START_END_length, pos_tags_learning):
-    corpus_words_train, corpus_tags_train, indeces_untagged_words_train, lemmas_train = read_data(train_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning)
-    corpus_words_dev, corpus_tags_dev, indeces_untagged_words_dev, lemmas_dev = read_data(dev_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning, start_index = len(corpus_tags_train))
+    corpus_words_train, corpus_tags_train, indeces_untagged_words_train, lemmas_train = read_data(train_path,
+                                                                                                  PADDING_START_END_length=PADDING_START_END_length,
+                                                                                                  pos_tags_learning=pos_tags_learning)
+    corpus_words_dev, corpus_tags_dev, indeces_untagged_words_dev, lemmas_dev = read_data(dev_path,
+                                                                                          PADDING_START_END_length=PADDING_START_END_length,
+                                                                                          pos_tags_learning=pos_tags_learning,
+                                                                                          start_index=len(
+                                                                                              corpus_tags_train))
     corpus_words = corpus_words_train + corpus_words_dev
     corpus_tags = corpus_tags_train + corpus_tags_dev
     indeces_untagged_words = indeces_untagged_words_train + indeces_untagged_words_dev
     lemmas = lemmas_train.union(lemmas_dev)
-    corpus_words_test, corpus_tags_test, indeces_untagged_words_test, lemmas_test = read_data(test_path, PADDING_START_END_length=PADDING_START_END_length, pos_tags_learning= pos_tags_learning, start_index = len(corpus_tags))
+    corpus_words_test, corpus_tags_test, indeces_untagged_words_test, lemmas_test = read_data(test_path,
+                                                                                              PADDING_START_END_length=PADDING_START_END_length,
+                                                                                              pos_tags_learning=pos_tags_learning,
+                                                                                              start_index=len(
+                                                                                                  corpus_tags))
     corpus_words += corpus_words_test
     corpus_tags += corpus_tags_test
-    indeces_untagged_words +=indeces_untagged_words_test
+    indeces_untagged_words += indeces_untagged_words_test
     lemmas = lemmas.union(lemmas_test)
     return corpus_words, corpus_tags, indeces_untagged_words, lemmas
-
-
 
 
 def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning, start_index=0):
@@ -74,7 +82,6 @@ def read_data(corpus_file_path, PADDING_START_END_length, pos_tags_learning, sta
                 lemmas.add(field_values[field_values_dictionary["LEMMA"]])
                 flag_end_sentence = False
                 if field_values[field_values_dictionary["POSTAG"]] in pos_tags_learning:
-                    indeces_untagged_words.append(len(corpus_tags_gold)-1 + start_index)
-
+                    indeces_untagged_words.append(len(corpus_tags_gold) - 1 + start_index)
 
     return corpus_words[:-2], corpus_tags_gold[:-2], indeces_untagged_words, lemmas
