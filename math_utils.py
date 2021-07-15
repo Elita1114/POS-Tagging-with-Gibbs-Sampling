@@ -16,7 +16,7 @@ def normalize(vector):
         cls = type(vector)
 
         return cls({
-                vector[tag] / sum_of_values for tag in vector.keys()
+                tag : vector[tag] / sum_of_values for tag in vector.keys()
             })
     else:
         raise AttributeError(f"Given vectors' type ({type(vector)}) is not supported.")
