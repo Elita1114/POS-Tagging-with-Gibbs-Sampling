@@ -1,51 +1,17 @@
-import argparse
-from collections import defaultdict, Counter
-from typing import Union, Iterable, Tuple
+"""
+Main file execute it to run the program.
+Submitters: Eliya Nakar & Yotam Firer
+"""
 
+import argparse
 import numpy as np
 import random
 
-from file_utils import *
+from typing import List
+
+from file_utils import arrange_corpus
 from gibbs_sampling import GibbsSampler, GibbsSamplingArguments
-from types import Emissions, Transitions
-
-from math_utils import normalize
-
-
-def normalize_emissions(emission_counter: Emissions) -> Emissions:
-    """Normalize the emission probabilities from the given emission counter"""
-    emission_prob = defaultdict(Counter)
-
-    for word in emission_counter.keys():
-        emission_prob[word] = normalize(emission_counter[word])
-
-    return emission_prob
-
-
-def build_emissions(corpus_words: Iterable, corpus_tags: Iterable) -> Tuple[Emissions, Emissions]:
-    """Calculate and Build the emission probabilities"""
-    emission_counter = defaultdict(Counter)
-
-    for word, tag in zip(corpus_words, corpus_tags):
-        emission_counter[word][tag] += 1
-
-    emission_prob = normalize_emissions(emission_counter)
-    return emission_counter, emission_prob
-
-
-def build_transitions(corpus_tags, transition_length) -> Tuple[Transitions, Transitions]:
-    """Calculate and Build the emission probabilities"""
-    transition_counter = Counter()
-
-    for idx in range(transition_length, len(corpus_tags)):
-        transition_counter[
-            tuple(
-                corpus_tags[idx - transition_length: idx + 1]
-            )
-        ] += 1
-
-    transition_prob = normalize(transition_counter)
-    return transition_counter, transition_prob
+from build_em_trans_utils import build_transitions, build_emissions
 
 
 def main():
@@ -57,8 +23,7 @@ def main():
         POS_TAGS_WE_ARE_LEARNING
     )
 
-    emission_counter, emission_probs = build_emissions(corpus_words, corpus_tags)
-    transition_counter, transition_probs = build_transitions(corpus_tags, WINDOW_SIZE)
+    gold_tags = corpus_tags.copy()
 
     corpus_tags = np.array(corpus_tags)
     initialize_random_tags = np.array(random.choices(
@@ -69,15 +34,20 @@ def main():
     corpus_tags[indexes_untagged_words] = initialize_random_tags
     corpus_tags = corpus_tags.tolist()
 
+    emission_counter, emission_probs = build_emissions(corpus_words, corpus_tags)
+    # transition_counter, transition_probs = build_transitions(corpus_tags, WINDOW_SIZE)
+    transition_counter = build_transitions(corpus_tags, WINDOW_SIZE)
+
     gibbs_args = GibbsSamplingArguments(
         corpus_words=corpus_words,
         corpus_tags=corpus_tags,
-        indexes_untagged_words=indexes_untagged_words,
+        indexes_of_untagged_words=indexes_untagged_words,
         emission_probs=emission_probs,
         emission_counter=emission_counter,
-        transition_probs=transition_probs,
         transition_counter=transition_counter,
-        learning_tags=POS_TAGS_WE_ARE_LEARNING
+        learning_tags=POS_TAGS_WE_ARE_LEARNING,
+        window_size=WINDOW_SIZE,
+        gold_tags=gold_tags
     )
 
     gibbs_sampler = GibbsSampler(gibbs_args)
@@ -118,6 +88,7 @@ if __name__ == '__main__':
         help="The tags window size."
     )
 
+    # parse the command-line arguments
     args = argparser.parse_args()
 
     TRAIN_PATH: str = args.train_path
@@ -126,7 +97,7 @@ if __name__ == '__main__':
     WINDOW_SIZE: int = args.window_size
     PADDING_LENGTH: int = WINDOW_SIZE * 2
 
-    POS_TAGS_WE_ARE_LEARNING = [".", ","]
+    POS_TAGS_WE_ARE_LEARNING: List[str] = [".", ","]
 
-    # call main function
+    # call the main function
     main()
