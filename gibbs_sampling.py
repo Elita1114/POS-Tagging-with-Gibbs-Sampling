@@ -1,7 +1,7 @@
 """This file contains our implementation of the gibbs sampling algorithm."""
 
 from dataclasses import dataclass
-from typing import Union, Iterable
+from typing import Iterable, List
 from mytypes import Emissions, Transitions, Tag
 from numpy.random import choice
 from collections import defaultdict, Counter
@@ -16,7 +16,6 @@ class GibbsSamplingArguments(object):
     To use the *GibbsSampler* class you have to create an instance
     of this class and pass to the *GibbsSampler* class.
     """
-
     corpus_words: Iterable
     corpus_tags: Iterable
     indexes_of_untagged_words: Iterable
@@ -66,7 +65,7 @@ class GibbsSampler(object):
         return self.args.corpus_tags
 
     @staticmethod
-    def _draw_tag(tag_probs) -> str:
+    def _draw_tag(tag_probs) -> Tag:
         """Draw a tag from a probability vector."""
         return str(choice(range(len(tag_probs)), 1, p=tag_probs)[0])
 
@@ -99,7 +98,7 @@ class GibbsSampler(object):
         if change_emission_probs:
             self.args.emission_probs[word] = normalize(self.args.emission_counter[word])
 
-    def _reverse_emission(self, word, prev_tag, new_tag):
+    def _reverse_emission(self, word, prev_tag, new_tag) -> None:
         """
         When called after *update_emission* (with change_emission_probs = False),
         it will cancel all of its changes.
@@ -136,7 +135,7 @@ class GibbsSampler(object):
 
         self.args.corpus_tags[idx] = prev_tag
 
-    def reverse_transition(self, prev_tag, new_tag, idx):
+    def _reverse_transition(self, prev_tag, new_tag, idx) -> None:
         """
         When called after *update_transition*, it will cancel all of its changes.
         """
@@ -164,13 +163,15 @@ class GibbsSampler(object):
         transition: float = 1.0
 
         for shift in range(self.args.window_size + 2):
-            transition *= (self.args.transition_counter[
+            transition *= (
+                    self.args.transition_counter[
                                tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
-                           ] / self.args.transition_counter[new_tag])
+                           ] / self.args.transition_counter[new_tag]
+            )
 
         return transition
 
-    def _calc_tag_probs(self, idx, word, prev_tag):
+    def _calc_tag_probs(self, idx, word, prev_tag) -> List[float]:
         """
         Calculate the probability for each possible tag given all sequence.
         This function doesn't change any of the data.
@@ -186,7 +187,7 @@ class GibbsSampler(object):
             transition = self._calc_transition_prob(idx, tag)
 
             self._reverse_emission(word, prev_tag, tag)
-            self.reverse_transition(prev_tag, tag, idx)
+            self._reverse_transition(prev_tag, tag, idx)
 
             tag_probs.append(emission * transition)
         return normalize(tag_probs)
