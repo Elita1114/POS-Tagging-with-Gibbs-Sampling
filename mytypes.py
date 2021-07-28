@@ -1,10 +1,10 @@
 """This file contains special types we declare."""
 
 
-from typing import Union
-from collections import defaultdict, Counter
+from typing import Union, DefaultDict
+from collections import Counter
 
 Tag = Union[str, int]
-Emissions = defaultdict[Tag, Counter]
+Emissions = DefaultDict[Tag, Counter]
 Transitions = Counter
 
