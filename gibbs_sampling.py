@@ -105,13 +105,22 @@ class GibbsSampler(object):
         it will cancel all of its changes.
         """
         self.args.emission_counter[word][prev_tag] += 1
-        self.args.emission_counter[word][new_tag] -= 1
+
+        if self.args.emission_counter[word][prev_tag] > 0:
+            self.args.emission_counter[word][new_tag] -= 1
+        else:
+            raise RuntimeError(f"Emissions counter has a negative entry for word '{word}'"
+                               f" and tag '{new_tag}'.")
 
     def _update_transition(self, prev_tag: Tag, new_tag: Tag, idx: int) -> None:
         """
         Change the counts of the transition with the new tag.
         """
-        self.args.transition_counter[prev_tag] -= 1
+        if self.args.transition_counter[prev_tag] > 0:
+            self.args.transition_counter[prev_tag] -= 1
+        else:
+            raise RuntimeError(f"Transitions counter has a negative entry for tag '{prev_tag}'.")
+
         for shift in range(self.args.window_size + 2):
             self.args.transition_counter[
                 tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
@@ -132,6 +141,7 @@ class GibbsSampler(object):
         When called after *update_transition*, it will cancel all of its changes.
         """
         self.args.transition_counter[prev_tag] += 1
+
         for shift in range(self.args.window_size + 2):
             self.args.transition_counter[
                 tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])

@@ -4,14 +4,15 @@ emission & transition, counters & probability vectors.
 """
 
 from mytypes import Emissions, Transitions
-from collections import defaultdict, Counter
-from typing import Union, Iterable, Tuple
+from collections import defaultdict
+from non_negative_counter import NonNegativeCounter
+from typing import Iterable, Tuple
 from math_utils import normalize
 
 
 def get_emission_probs(emission_counter: Emissions) -> Emissions:
     """Get the emission probabilities by normalizing the given emission counter."""
-    emission_prob = defaultdict(Counter)
+    emission_prob = defaultdict(NonNegativeCounter)
 
     for word in emission_counter.keys():
         emission_prob[word] = normalize(emission_counter[word])
@@ -21,7 +22,7 @@ def get_emission_probs(emission_counter: Emissions) -> Emissions:
 
 def build_emissions(corpus_words: Iterable, corpus_tags: Iterable) -> Tuple[Emissions, Emissions]:
     """Calculate and Build the emission probabilities."""
-    emission_counter = defaultdict(Counter)
+    emission_counter = defaultdict(NonNegativeCounter)
 
     for word, tag in zip(corpus_words, corpus_tags):
         emission_counter[word][tag] += 1
@@ -32,7 +33,7 @@ def build_emissions(corpus_words: Iterable, corpus_tags: Iterable) -> Tuple[Emis
 
 def build_transitions(corpus_tags, transition_length) -> Transitions:
     """Calculate and Build the transition probabilities"""
-    transition_counter = Counter()
+    transition_counter = NonNegativeCounter()
 
     for idx in range(transition_length, len(corpus_tags)):
         transition_counter[

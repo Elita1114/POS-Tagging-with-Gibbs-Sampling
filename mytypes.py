@@ -2,9 +2,9 @@
 
 
 from typing import Union, DefaultDict
-from collections import Counter
+from non_negative_counter import NonNegativeCounter
 
 Tag = Union[str, int]
-Emissions = DefaultDict[Tag, Counter]
-Transitions = Counter
+Emissions = DefaultDict[Tag, NonNegativeCounter]
+Transitions = NonNegativeCounter
 

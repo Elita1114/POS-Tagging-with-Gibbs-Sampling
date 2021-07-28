@@ -2,10 +2,11 @@
 
 import numpy as np
 from collections import defaultdict, Counter
+from non_negative_counter import NonNegativeCounter
 
 from typing import Union
 
-_Vector_Types = Union[list, np.array, dict, defaultdict, Counter]
+_Vector_Types = Union[list, np.array, dict, defaultdict, Counter, NonNegativeCounter]
 
 
 def normalize(vector: _Vector_Types) -> _Vector_Types:
@@ -17,7 +18,7 @@ def normalize(vector: _Vector_Types) -> _Vector_Types:
     elif type(vector) == np.array:
         return np.linalg.norm(vector)
 
-    elif type(vector) in {dict, defaultdict, Counter}:
+    elif isinstance(vector, dict) or issubclass(type(vector), dict):
         sum_of_values = float(sum(vector.values()))
         cls = type(vector)
 

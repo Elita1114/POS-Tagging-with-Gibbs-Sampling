@@ -3,14 +3,16 @@
 from tqdm import tqdm
 from constants import START_PAD, END_PAD, field_values_dictionary
 
-from typing import Union, List, Set
+from typing import Union, Tuple, List, Set
+from mytypes import Tag
 
 
 def arrange_corpus(train_path: str,
                    dev_path: str,
                    test_path: str,
                    padding: int,
-                   pos_tags_we_are_learning: List[str]):
+                   pos_tags_we_are_learning: List[str])\
+        -> Tuple[List[str], List[Tag], List[int], Set[str]]:
     """
     Read and Arrange the corpus.
 
@@ -19,7 +21,8 @@ def arrange_corpus(train_path: str,
     :param test_path: The path to the test data file.
     :param padding: The padding length to add (has to be >= 0).
     :param pos_tags_we_are_learning: The POS tags we are learning.
-    :return: The corpus' words, The corpus' tags, The corpus' indexes of untagged words and The corpus' lemmas.
+    :return: The corpus' words, The corpus' tags,
+     The corpus' indexes of untagged words and The corpus' lemmas.
     """
 
     # read the train data
@@ -33,7 +36,7 @@ def arrange_corpus(train_path: str,
 
     corpus_words = corpus_words_train + corpus_words_dev
     corpus_tags = corpus_tags_train + corpus_tags_dev
-    indexes_untagged_words = indexes_untagged_words_train + indexes_untagged_words_dev
+    indexes_of_untagged_words = indexes_untagged_words_train + indexes_untagged_words_dev
     lemmas = lemmas_train.union(lemmas_dev)
 
     # read the test data
@@ -45,11 +48,11 @@ def arrange_corpus(train_path: str,
     # to the corresponding corpus' ones
     corpus_words += corpus_words_test
     corpus_tags += corpus_tags_test
-    indexes_untagged_words += indexes_untagged_words_test
+    indexes_of_untagged_words += indexes_untagged_words_test
     lemmas = lemmas.union(lemmas_test)
 
     # return the arranged data
-    return corpus_words, corpus_tags, indexes_untagged_words, lemmas
+    return corpus_words, corpus_tags, indexes_of_untagged_words, lemmas
 
 
 def _read_data(
@@ -59,13 +62,9 @@ def _read_data(
         start_index: int = 0
 ) -> Union[List[str], List[str], List[int], Set[str]]:
     """
-       Splits the corpus' words into list of sentences.
-       Also collects all the unique lemmas.
-       Each sentence is a list of dictionaries.
-       Each dictionary represents a word's fields.
-       The field names are the keys and the field values are the dictionary values.
+       Read a data file.\n
 
-       :param corpus_file_path: the path to the corpus_words file.
+       :param corpus_file_path: The path to the data file.
        :return: The corpus' words split into a list of sentences,
                 and the unique lemmas from the corpus' words.
        """
@@ -83,11 +82,12 @@ def _read_data(
     with open(corpus_file_path, 'r', encoding='utf-8') as corpus_file:
         # read the file line by line
         # with this reading method we load little components of the corpus_words
-        # and we preventing memory errors
+        # and we prevent memory errors
         for line in tqdm(corpus_file):
-            # delete '\n's in the end of the line
-            if line[0] == "" or line[0] == "#":
+            # skip lines that start with #
+            if line[0] == "#":
                 continue
+
             # if the line is a space line between sentences
             # move to the next sentence
             elif line == '\n':
@@ -104,8 +104,10 @@ def _read_data(
 
             # a normal line containing a word fields
             else:
-                # split the line into the filed values
+                # delete '\n's in the end of the line
                 line = line.strip('\n')
+
+                # split the line into the filed values
                 field_values = line.split('\t')
 
                 corpus_words.append(field_values[field_values_dictionary["LEMMA"]])
