@@ -47,7 +47,7 @@ class GibbsSampler(object):
         if iter_to_log_score is not None:
             assert iter_to_log_score > 0, 'iter_to_log_score has to be greater than 0.'
 
-        for _ in tqdm(range(epochs_number)):
+        for epoch in tqdm(range(epochs_number)):
             for idx in self.args.indexes_of_untagged_words:
                 # get the word
                 word = self.args.corpus_words[idx]
@@ -68,9 +68,9 @@ class GibbsSampler(object):
                 # set the new tag
                 self.args.corpus_tags[idx] = new_tag
 
-                if iter_to_log_score is not None and idx % iter_to_log_score == 0:
-                    _, score = self._match_tag_to_learned_tag()
-                    print(f"score: {score}")
+            if iter_to_log_score is not None and epoch % iter_to_log_score == 0:
+                _, score = self._match_tag_to_learned_tag()
+                print(f"Epoch: {epoch} | score: {score}")
 
         mapping, score = self._match_tag_to_learned_tag()
 
