@@ -68,9 +68,9 @@ class GibbsSampler(object):
                 # set the new tag
                 self.args.corpus_tags[idx] = new_tag
 
-            if iter_to_log_score is not None and epoch % iter_to_log_score == 0:
+            if iter_to_log_score is not None and (epoch + 1) % iter_to_log_score == 0:
                 _, score = self._match_tag_to_learned_tag()
-                print(f"Epoch: {epoch} | score: {score}")
+                print(f"\nEpoch: {epoch} | score: {score}")
 
         mapping, score = self._match_tag_to_learned_tag()
 
@@ -219,6 +219,7 @@ class GibbsSampler(object):
                  Also returns the score of the best mapping.
         """
         tags_we_learn_to_abstract_tags = defaultdict(NonNegativeCounter)
+
         for idx in self.args.indexes_of_untagged_words:
             tags_we_learn_to_abstract_tags[self.args.gold_tags[idx]][self.args.corpus_tags[idx]] += 1
 
@@ -229,7 +230,7 @@ class GibbsSampler(object):
         for perm in permutations(self.args.abstract_tags):
             sum_ = 0
             for tag_we_learn, abstract_tag in zip(self.args.learning_tags, perm):
-                sum_ += tags_we_learn_to_abstract_tags[tag_we_learn][abstract_tag]
+                sum_ += tags_we_learn_to_abstract_tags[tag_we_learn][str(abstract_tag)]
 
             score = sum_ / denom
             options_to_score[tuple(perm)] = score
