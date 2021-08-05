@@ -133,7 +133,6 @@ if __name__ == '__main__':
 
     argparser.add_argument(
         "--save-at-end",
-        type=bool,
         action='store_true',
         help="If set the arguments will be saved at the end."
     )
