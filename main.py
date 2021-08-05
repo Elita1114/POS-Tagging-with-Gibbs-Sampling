@@ -54,7 +54,7 @@ def main():
 
     gibbs_sampler = GibbsSampler(gibbs_args)
 
-    results = gibbs_sampler.run()
+    results = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END)
 
 
 def _set_random_tags(tag_list: List[Tag], indexes_to_set_to: List[int]) -> List[Tag]:
@@ -124,6 +124,20 @@ if __name__ == '__main__':
         help="The tags window size."
     )
 
+    argparser.add_argument(
+        "--epochs", '-e',
+        type=int,
+        default=1000,
+        help="The epochs to run for."
+    )
+
+    argparser.add_argument(
+        "--save-at-end",
+        type=bool,
+        action='store_true',
+        help="If set the arguments will be saved at the end."
+    )
+
     # parse the command-line arguments
     args = argparser.parse_args()
 
@@ -132,6 +146,9 @@ if __name__ == '__main__':
     TEST_PATH: str = args.test_path
 
     SEED: int = args.seed
+
+    EPOCHS: int = args.epochs
+    SAVE_AT_END: bool = args.save_at_end
 
     WINDOW_SIZE: int = args.window_size
     PADDING_LENGTH: int = WINDOW_SIZE * 2
