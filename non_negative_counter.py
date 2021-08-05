@@ -11,4 +11,4 @@ class NonNegativeCounter(_Counter):
         if value >= 0:
             super().__setitem__(key, value)
         else:
-            raise ValueError(f"Tried setting a negative value ({value}) in key '{key}'")
+            raise ValueError(f"Tried to set a negative value ({value}) in key '{key}'")

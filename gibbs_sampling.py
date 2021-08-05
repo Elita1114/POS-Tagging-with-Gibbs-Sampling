@@ -16,15 +16,15 @@ class GibbsSamplingArguments(object):
     To use the *GibbsSampler* class you have to create an instance
     of this class and pass to the *GibbsSampler* class.
     """
-    corpus_words: Iterable
-    corpus_tags: Iterable
-    indexes_of_untagged_words: Iterable
+    corpus_words: Iterable[str]
+    corpus_tags: Iterable[Tag]
+    indexes_of_untagged_words: Iterable[int]
     emission_probs: Emissions
     emission_counter: Emissions
     transition_counter: Transitions
-    learning_tags: Iterable
+    learning_tags: Iterable[Tag]
     window_size: int
-    gold_tags: Iterable
+    gold_tags: Iterable[Tag]
 
 
 class GibbsSampler(object):
@@ -58,6 +58,8 @@ class GibbsSampler(object):
                 self._update_emission(word, prev_tag, new_tag, change_emission_probs=True)
                 self._update_transition(prev_tag, new_tag, idx)
 
+                # self._clear_zeros()
+
         tag_to_learned = self.match_tag_to_learned_tag()
 
         # replace the symbols with the actual tags
@@ -69,9 +71,9 @@ class GibbsSampler(object):
         """Draw a tag from a probability vector."""
         return str(choice(range(len(tag_probs)), 1, p=tag_probs)[0])
 
-    def _calc_emission(self, tag: Tag, word: str) -> float:
+    def _calc_emission(self, word: str, tag: Tag) -> float:
         """
-        Calculate the emission probability from the given tag to the given word.
+        Calculate the emission probability from the given word to the given tag.
         """
         emission_probs_local = normalize(self.args.emission_counter[word])
         return emission_probs_local[tag]
@@ -84,15 +86,9 @@ class GibbsSampler(object):
             change_emission_probs: bool = False
     ) -> None:
         """
-        Change the counts of emission with the new tag.
+        Change the counts of the emission counter with the new tag.
         """
-
-        if self.args.emission_counter[word][prev_tag] > 0:
-            self.args.emission_counter[word][prev_tag] -= 1
-        else:
-            raise RuntimeError(f"Emissions counter has a negative entry for word '{word}'"
-                               f" and tag '{prev_tag}'.")
-
+        self.args.emission_counter[word][prev_tag] -= 1
         self.args.emission_counter[word][new_tag] += 1
 
         if change_emission_probs:
@@ -101,47 +97,41 @@ class GibbsSampler(object):
     def _reverse_emission(self, word, prev_tag, new_tag) -> None:
         """
         When called after *update_emission* (with change_emission_probs = False),
-        it will cancel all of its changes.
+        it cancels all of its changes.
         """
         self.args.emission_counter[word][prev_tag] += 1
-
-        if self.args.emission_counter[word][prev_tag] > 0:
-            self.args.emission_counter[word][new_tag] -= 1
-        else:
-            raise RuntimeError(f"Emissions counter has a negative entry for word '{word}'"
-                               f" and tag '{new_tag}'.")
+        self.args.emission_counter[word][new_tag] -= 1
 
     def _update_transition(self, prev_tag: Tag, new_tag: Tag, idx: int) -> None:
         """
         Change the counts of the transition with the new tag.
         """
-        if self.args.transition_counter[prev_tag] > 0:
-            self.args.transition_counter[prev_tag] -= 1
-        else:
-            raise RuntimeError(f"Transitions counter has a negative entry for tag '{prev_tag}'.")
+        self.args.transition_counter[prev_tag] -= 1
 
-        for shift in range(self.args.window_size + 2):
+        for shift in range(0, self.args.window_size + 1):
             self.args.transition_counter[
-                tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
+                tuple(
+                    self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1]
+                )
             ] -= 1
 
         self.args.transition_counter[new_tag] += 1
         self.args.corpus_tags[idx] = new_tag
 
-        for shift in range(self.args.window_size + 2):
+        for shift in range(0, self.args.window_size + 1):
             self.args.transition_counter[
                 tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
             ] += 1
 
         self.args.corpus_tags[idx] = prev_tag
 
-    def _reverse_transition(self, prev_tag, new_tag, idx) -> None:
+    def _reverse_transition(self, prev_tag: Tag, new_tag: Tag, idx: int) -> None:
         """
-        When called after *update_transition*, it will cancel all of its changes.
+        When called after *update_transition*, it cancels all of its changes.
         """
         self.args.transition_counter[prev_tag] += 1
 
-        for shift in range(self.args.window_size + 2):
+        for shift in range(0, self.args.window_size + 1):
             self.args.transition_counter[
                 tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
             ] += 1
@@ -149,29 +139,33 @@ class GibbsSampler(object):
         self.args.transition_counter[new_tag] -= 1
         self.args.corpus_tags[idx] = new_tag
 
-        for shift in range(self.args.window_size + 2):
+        for shift in range(0, self.args.window_size + 1):
             self.args.transition_counter[
                 tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
             ] -= 1
 
         self.args.corpus_tags[idx] = prev_tag
 
-    def _calc_transition_prob(self, idx, new_tag) -> float:
+    def _calc_transition_prob(self, idx: int, prev_tag: Tag, new_tag: Tag) -> float:
         """
         Calculate the transition probability.
         """
         transition: float = 1.0
 
-        for shift in range(self.args.window_size + 2):
+        self.args.corpus_tags[idx] = new_tag
+
+        for shift in range(self.args.window_size + 1):
             transition *= (
-                    self.args.transition_counter[
-                               tuple(self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1])
-                           ] / self.args.transition_counter[new_tag]
+                    self.args.transition_counter[tuple(
+                               self.args.corpus_tags[shift + idx - self.args.window_size: shift + idx + 1]
+                    )] / self.args.transition_counter[new_tag]
             )
+
+        self.args.corpus_tags[idx] = prev_tag
 
         return transition
 
-    def _calc_tag_probs(self, idx, word, prev_tag) -> List[float]:
+    def _calc_tag_probs(self, word_and_tag_idx: int, word: str, prev_tag: Tag) -> List[float]:
         """
         Calculate the probability for each possible tag given all sequence.
         This function doesn't change any of the data.
@@ -181,13 +175,13 @@ class GibbsSampler(object):
         for i in self.args.emission_counter[word].keys():
             tag = str(i)
             self._update_emission(word, prev_tag, tag)
-            emission = self._calc_emission(tag, word)
+            emission = self._calc_emission(word, tag)
 
-            self._update_transition(prev_tag, tag, idx)
-            transition = self._calc_transition_prob(idx, tag)
+            self._update_transition(prev_tag, tag, word_and_tag_idx)
+            transition = self._calc_transition_prob(word_and_tag_idx, prev_tag, tag)
 
             self._reverse_emission(word, prev_tag, tag)
-            self._reverse_transition(prev_tag, tag, idx)
+            self._reverse_transition(prev_tag, tag, word_and_tag_idx)
 
             tag_probs.append(emission * transition)
         return normalize(tag_probs)

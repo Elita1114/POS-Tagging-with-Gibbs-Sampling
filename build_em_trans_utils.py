@@ -6,7 +6,8 @@ emission & transition, counters & probability vectors.
 from mytypes import Emissions, Transitions
 from collections import defaultdict
 from non_negative_counter import NonNegativeCounter
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, List
+from mytypes import Tag
 from math_utils import normalize
 
 
@@ -20,7 +21,7 @@ def get_emission_probs(emission_counter: Emissions) -> Emissions:
     return emission_prob
 
 
-def build_emissions(corpus_words: Iterable, corpus_tags: Iterable) -> Tuple[Emissions, Emissions]:
+def build_emissions(corpus_words: Iterable[str], corpus_tags: Iterable[Tag]) -> Tuple[Emissions, Emissions]:
     """Calculate and Build the emission probabilities."""
     emission_counter = defaultdict(NonNegativeCounter)
 
@@ -31,16 +32,19 @@ def build_emissions(corpus_words: Iterable, corpus_tags: Iterable) -> Tuple[Emis
     return emission_counter, emission_prob
 
 
-def build_transitions(corpus_tags, transition_length) -> Transitions:
+def build_transitions(corpus_tags: List[Tag], transition_length: int) -> Transitions:
     """Calculate and Build the transition probabilities"""
     transition_counter = NonNegativeCounter()
 
     for idx in range(transition_length, len(corpus_tags)):
+        # count the sequence of tags
         transition_counter[
             tuple(
                 corpus_tags[idx - transition_length: idx + 1]
             )
         ] += 1
+
+        # count the individual tag
         transition_counter[corpus_tags[idx]] += 1
 
     return transition_counter
