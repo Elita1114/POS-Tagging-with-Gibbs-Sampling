@@ -236,7 +236,7 @@ class GibbsSampler(object):
             options_to_score[tuple(perm)] = score
 
         best_permutation = max(options_to_score.keys(), key=lambda key: options_to_score[key])
-        mapping = {p: t for p, t in zip(best_permutation, self.args.learning_tags)}
+        mapping = {str(p): t for p, t in zip(best_permutation, self.args.learning_tags)}
 
         return mapping, options_to_score[best_permutation]
 
