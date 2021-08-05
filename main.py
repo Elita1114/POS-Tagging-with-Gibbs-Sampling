@@ -10,6 +10,8 @@ import numpy as np
 import random
 
 from typing import List
+
+from general_utils import set_seed
 from mytypes import Tag
 
 from file_utils import arrange_corpus
@@ -18,6 +20,8 @@ from build_em_trans_utils import build_transitions, build_emissions
 
 
 def main():
+    set_seed(seed=SEED)
+
     # read the data and parse it
     corpus_words, corpus_tags, indexes_of_untagged_words, lemmas = arrange_corpus(
         train_path=TRAIN_PATH,
@@ -43,6 +47,7 @@ def main():
         emission_counter=emission_counter,
         transition_counter=transition_counter,
         learning_tags=POS_TAGS_WE_ARE_LEARNING,
+        abstract_tags=range(len(POS_TAGS_WE_ARE_LEARNING)),
         window_size=WINDOW_SIZE,
         gold_tags=gold_tags
     )
@@ -106,6 +111,13 @@ if __name__ == '__main__':
     )
 
     argparser.add_argument(
+        "--seed",
+        type=int,
+        default=1,
+        help="The random seed to use."
+    )
+
+    argparser.add_argument(
         "--window-size",
         type=int,
         default=1,
@@ -118,6 +130,9 @@ if __name__ == '__main__':
     TRAIN_PATH: str = args.train_path
     DEV_PATH: str = args.dev_path
     TEST_PATH: str = args.test_path
+
+    SEED: int = args.seed
+
     WINDOW_SIZE: int = args.window_size
     PADDING_LENGTH: int = WINDOW_SIZE * 2
 
