@@ -6,7 +6,7 @@ from mytypes import Emissions, Transitions, Tag
 from numpy.random import choice
 from collections import defaultdict, Counter
 from math_utils import normalize
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from itertools import permutations
 
@@ -39,13 +39,20 @@ class GibbsSampler(object):
         assert args is not None, "args can't be None."
         self.args = args
 
-    def run(self, epochs_number: int = 1000, iter_to_log_score: Optional[int] = 10, save_at_end: bool = True) -> Iterable[Tag]:
+    def run(
+            self,
+            epochs_number: int = 1000,
+            iter_to_log_score: Optional[int] = 10,
+            save_at_end: bool = True
+    ) -> Tuple[Iterable[Tag], List[float]]:
         """Run the gibbs sampling algorithm"""
 
         assert epochs_number > 0, 'epochs_number has to be greater than 0.'
 
         if iter_to_log_score is not None:
             assert iter_to_log_score > 0, 'iter_to_log_score has to be greater than 0.'
+
+        scores: list = []
 
         for epoch in tqdm(range(epochs_number)):
             for idx in self.args.indexes_of_untagged_words:
@@ -71,6 +78,7 @@ class GibbsSampler(object):
             if iter_to_log_score is not None and (epoch + 1) % iter_to_log_score == 0:
                 _, score = self._match_tag_to_learned_tag()
                 print(f"\nEpoch: {epoch} | score: {score}")
+                scores.append(score)
 
         mapping, score = self._match_tag_to_learned_tag()
 
@@ -80,7 +88,7 @@ class GibbsSampler(object):
         if save_at_end:
             save_object(self.args, 'saved_gibbs_args')
 
-        return final_tags
+        return final_tags, scores
 
     @staticmethod
     def load_from_checkpoint(checkpoint: str):

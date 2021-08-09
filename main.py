@@ -17,6 +17,7 @@ from mytypes import Tag
 from file_utils import arrange_corpus
 from gibbs_sampling import GibbsSampler, GibbsSamplingArguments
 from build_em_trans_utils import build_transitions, build_emissions
+from plotit import plot_scores
 
 
 def main():
@@ -54,7 +55,8 @@ def main():
 
     gibbs_sampler = GibbsSampler(gibbs_args)
 
-    results = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END)
+    results, scores = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END)
+    plot_scores(scores)
 
 
 def _set_random_tags(tag_list: List[Tag], indexes_to_set_to: List[int]) -> List[Tag]:
