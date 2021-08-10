@@ -32,7 +32,7 @@ def simple_plot(
 
 def plot_scores(scores):
     """Plot the given scores"""
-    title = "Scores per epoch"
+    title = "Score per epoch"
     simple_plot(scores,
                 save_path=title.lower().replace(" ", "_"),
                 title=title,
