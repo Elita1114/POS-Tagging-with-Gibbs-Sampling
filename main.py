@@ -55,7 +55,7 @@ def main():
 
     gibbs_sampler = GibbsSampler(gibbs_args)
 
-    results, scores = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END)
+    results, scores = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END, verbose=VERBOSE)
     plot_scores(scores)
 
 
@@ -139,6 +139,12 @@ if __name__ == '__main__':
         help="If set the arguments will be saved at the end."
     )
 
+    argparser.add_argument(
+        "--silent",
+        action='store_true',
+        help="If set the run will not output the scores for each epoch."
+    )
+
     # parse the command-line arguments
     args = argparser.parse_args()
 
@@ -153,6 +159,7 @@ if __name__ == '__main__':
 
     WINDOW_SIZE: int = args.window_size
     PADDING_LENGTH: int = WINDOW_SIZE * 2
+    VERBOSE: bool = not args.silent
 
     _validate_the_args()
 

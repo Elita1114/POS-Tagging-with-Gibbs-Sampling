@@ -1,7 +1,7 @@
 """This file contains our implementation of the gibbs sampling algorithm."""
 
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple, Dict, Optional
+from typing import Iterable, List, Tuple, Dict, Optional, Union
 from mytypes import Emissions, Transitions, Tag
 from numpy.random import choice
 from collections import defaultdict, Counter
@@ -42,19 +42,22 @@ class GibbsSampler(object):
     def run(
             self,
             epochs_number: int = 1000,
-            iter_to_log_score: Optional[int] = 10,
-            save_at_end: bool = True
+            save_at_end: bool = True,
+            verbose: bool = True
     ) -> Tuple[Iterable[Tag], List[float]]:
         """Run the gibbs sampling algorithm"""
 
         assert epochs_number > 0, 'epochs_number has to be greater than 0.'
 
-        if iter_to_log_score is not None:
-            assert iter_to_log_score > 0, 'iter_to_log_score has to be greater than 0.'
-
         scores: list = []
 
-        for epoch in tqdm(range(epochs_number)):
+        _, score = self._match_tag_to_learned_tag()
+
+        if verbose:
+            print(f"\nEpoch: 0 (Before the sampling == Random init) | score: {score}")
+        scores.append(score)
+
+        for epoch in tqdm(range(1, epochs_number + 1)):
             for idx in self.args.indexes_of_untagged_words:
                 # get the word
                 word = self.args.corpus_words[idx]
@@ -75,12 +78,16 @@ class GibbsSampler(object):
                 # set the new tag
                 self.args.corpus_tags[idx] = new_tag
 
-            if iter_to_log_score is not None and (epoch + 1) % iter_to_log_score == 0:
-                _, score = self._match_tag_to_learned_tag()
+            _, score = self._match_tag_to_learned_tag()
+
+            if verbose:
                 print(f"\nEpoch: {epoch} | score: {score}")
-                scores.append(score)
+            scores.append(score)
 
         mapping, score = self._match_tag_to_learned_tag()
+
+        if verbose:
+            print(f"\n-------------------------\n\nFinal score: {score}")
 
         # replace the symbols with the actual tags
         final_tags = self._swap_abstract_tags_and_true_tags(mapping)
