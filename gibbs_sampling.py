@@ -237,7 +237,7 @@ class GibbsSampler(object):
         :return: A mapping between the abstract tags to the tags we learned.
                  Also returns the score of the best mapping.
         """
-        print("enter map")
+
         tags_we_learn_to_abstract_tags = defaultdict(NonNegativeCounter)
 
         for idx in self.args.indexes_of_untagged_words:
@@ -268,11 +268,14 @@ class GibbsSampler(object):
         return mapping, best_score
 
     def _greedy_map(self, tags_we_learn_to_abstract_tags) -> Tuple[Dict[AbstractTag, Tag], float]:
+        learning_tags_left = self.args.learning_tags.copy()
+        abstract_tags_left = list(self.args.abstract_tags).copy()
         tags_we_learn_to_abstract_tags_copy = deepcopy(tags_we_learn_to_abstract_tags)
         mapping = dict()
-        best_mapping = {'tag': None, 'abstract_tag': None, 'count': -1}
+        best_mapping = {'tag': learning_tags_left[0], 'abstract_tag': abstract_tags_left[0], 'count': -1}
         score = 0.
 
+        save_map_data = dict()
         for i in range(len(tags_we_learn_to_abstract_tags.keys())):
             for actual_tag, abstract_tags_count in tags_we_learn_to_abstract_tags_copy.items():
                 for abstract_tag, count in abstract_tags_count.items():
@@ -288,12 +291,17 @@ class GibbsSampler(object):
             for abstract_tags_count in tags_we_learn_to_abstract_tags_copy.values():
                 abstract_tags_count.pop(best_mapping['abstract_tag'], None)
 
-            best_mapping['tag'] = None
-            best_mapping['abstract_tag'] = None
+
+            save_map_data[best_mapping['abstract_tag']] = (best_mapping['abstract_tag'], best_mapping['tag'], best_mapping['count'])
+            learning_tags_left.remove(best_mapping['tag'])
+            abstract_tags_left.remove(int(best_mapping['abstract_tag']))
+            best_mapping['tag'] = learning_tags_left[0] if len(learning_tags_left) != 0 else None
+            best_mapping['abstract_tag'] = abstract_tags_left[0] if len(abstract_tags_left) != 0 else None
             best_mapping['count'] = -1
 
         score /= len(self.args.indexes_of_untagged_words)
-
+        print("save_map_data")
+        print(save_map_data)
         return mapping, score
 
     def _swap_abstract_tags_and_true_tags(self, mapping: dict) -> List[Tag]:

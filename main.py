@@ -131,7 +131,7 @@ if __name__ == '__main__':
     argparser.add_argument(
         "--epochs", '-e',
         type=int,
-        default=1000,
+        default=3,
         help="The epochs to run for."
     )
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
     _validate_the_args()
 
-    POS_TAGS_WE_ARE_LEARNING: List[str] = ['JJ', '_', 'NNP', 'VB',".", ",", 'RB', 'TO', "''", 'CD', 'IN', 'DT', 'CC', '-LRB-', '-RRB-']
+    POS_TAGS_WE_ARE_LEARNING: List[str] = [ '_',".", ",", '-LRB-', '-RRB-']
 
 
     # call the main function

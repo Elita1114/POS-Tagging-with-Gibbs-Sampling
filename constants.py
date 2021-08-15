@@ -7,7 +7,7 @@ END_PAD: str = "EEENDDD"
 
 
 field_values_dictionary: Dict[str, int] = {
-    'STEM': 2,
+    'STEM': 1,
     'LEMMA': 2,
     'POSTAG': 4
 }

@@ -110,7 +110,7 @@ def _read_data(
                 # split the line into the filed values
                 field_values = line.split('\t')
 
-                corpus_words.append(field_values[field_values_dictionary["LEMMA"]])
+                corpus_words.append(field_values[field_values_dictionary["STEM"]])
                 corpus_tags_gold.append(field_values[field_values_dictionary["POSTAG"]])
                 lemmas.add(field_values[field_values_dictionary["LEMMA"]])
                 flag_end_sentence = False
