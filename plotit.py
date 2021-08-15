@@ -50,6 +50,6 @@ def plot_scores(scores):
                 ylabel="score",
                 fig_size=fig_size,
                 x_axis_are_strings=False,
-                x_axis_delta=1,
+                x_axis_delta=10,
                 color="blue"
                 )

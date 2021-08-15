@@ -81,12 +81,10 @@ class GibbsSampler(object):
                 # set the new tag
                 self.args.corpus_tags[idx] = new_tag
 
-            _, score = self._match_tag_to_learned_tag()
-
-            if verbose:
-                print(f"\nEpoch: {epoch} | score: {score}")
-
             if epochs_to_save_after is not None and epoch % epochs_to_save_after == 0:
+                _, score = self._match_tag_to_learned_tag()
+                if verbose:
+                    print(f"\nEpoch: {epoch} | score: {score}")
                 scores.append(score)
 
         mapping, score = self._match_tag_to_learned_tag()
