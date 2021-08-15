@@ -45,6 +45,7 @@ class GibbsSampler(object):
             self,
             epochs_number: int = 1000,
             save_at_end: bool = True,
+            epochs_to_save_after: int = None,
             verbose: bool = True
     ) -> Tuple[Iterable[Tag], List[float]]:
         """Run the gibbs sampling algorithm"""
@@ -84,7 +85,9 @@ class GibbsSampler(object):
 
             if verbose:
                 print(f"\nEpoch: {epoch} | score: {score}")
-            scores.append(score)
+
+            if epochs_to_save_after is not None and epoch % epochs_to_save_after == 0:
+                scores.append(score)
 
         mapping, score = self._match_tag_to_learned_tag()
 
@@ -98,6 +101,7 @@ class GibbsSampler(object):
             save_object(self.args, 'saved_gibbs_args')
 
         return final_tags, scores
+
 
     @staticmethod
     def load_from_checkpoint(checkpoint: str):
@@ -284,7 +288,7 @@ class GibbsSampler(object):
             tags_we_learn_to_abstract_tags_copy.pop(best_mapping['tag'])
 
             for abstract_tags_count in tags_we_learn_to_abstract_tags_copy.values():
-                abstract_tags_count.pop(best_mapping['abstract_tag'])
+                abstract_tags_count.pop(best_mapping['abstract_tag'], None)
 
             best_mapping['tag'] = None
             best_mapping['abstract_tag'] = None

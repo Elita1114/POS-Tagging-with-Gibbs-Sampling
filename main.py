@@ -55,7 +55,9 @@ def main():
 
     gibbs_sampler = GibbsSampler(gibbs_args)
 
-    results, scores = gibbs_sampler.run(epochs_number=EPOCHS, save_at_end=SAVE_AT_END, verbose=VERBOSE)
+    results, scores = gibbs_sampler.run(epochs_number=EPOCHS,
+                                        save_at_end=SAVE_AT_END,
+                                        verbose=VERBOSE, epochs_to_save_after=1)
     plot_scores(scores)
 
 
