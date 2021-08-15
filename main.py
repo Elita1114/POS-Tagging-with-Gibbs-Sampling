@@ -21,7 +21,7 @@ from plotit import plot_scores
 
 
 def main():
-    set_seed(seed=SEED)
+    #set_seed(seed=SEED)
 
     # read the data and parse it
     corpus_words, corpus_tags, indexes_of_untagged_words, lemmas = arrange_corpus(
@@ -165,7 +165,8 @@ if __name__ == '__main__':
 
     _validate_the_args()
 
-    POS_TAGS_WE_ARE_LEARNING: List[str] = [ '-LRB-', '-RRB-']
+    POS_TAGS_WE_ARE_LEARNING: List[str] = ['JJ', '_', 'NNP', 'VB',".", ",", 'RB', 'TO', "''", 'CD', 'IN', 'DT', 'CC', '-LRB-', '-RRB-']
+
 
     # call the main function
     main()

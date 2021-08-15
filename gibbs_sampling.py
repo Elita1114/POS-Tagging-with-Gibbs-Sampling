@@ -285,7 +285,7 @@ class GibbsSampler(object):
 
             mapping[best_mapping['abstract_tag']] = best_mapping['tag']
             score += best_mapping['count']
-            tags_we_learn_to_abstract_tags_copy.pop(best_mapping['tag'])
+            tags_we_learn_to_abstract_tags_copy.pop(best_mapping['tag'], None)
 
             for abstract_tags_count in tags_we_learn_to_abstract_tags_copy.values():
                 abstract_tags_count.pop(best_mapping['abstract_tag'], None)
