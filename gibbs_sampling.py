@@ -269,7 +269,7 @@ class GibbsSampler(object):
 
     def _greedy_map(self, tags_we_learn_to_abstract_tags) -> Tuple[Dict[AbstractTag, Tag], float]:
         learning_tags_left = self.args.learning_tags.copy()
-        abstract_tags_left = list(self.args.abstract_tags).copy()
+        abstract_tags_left = list(map(str, list(self.args.abstract_tags).copy()))
         tags_we_learn_to_abstract_tags_copy = deepcopy(tags_we_learn_to_abstract_tags)
         mapping = dict()
         best_mapping = {'tag': learning_tags_left[0], 'abstract_tag': abstract_tags_left[0], 'count': -1}
@@ -294,7 +294,7 @@ class GibbsSampler(object):
 
             save_map_data[best_mapping['abstract_tag']] = (best_mapping['abstract_tag'], best_mapping['tag'], best_mapping['count'])
             learning_tags_left.remove(best_mapping['tag'])
-            abstract_tags_left.remove(int(best_mapping['abstract_tag']))
+            abstract_tags_left.remove(best_mapping['abstract_tag'])
             best_mapping['tag'] = learning_tags_left[0] if len(learning_tags_left) != 0 else None
             best_mapping['abstract_tag'] = abstract_tags_left[0] if len(abstract_tags_left) != 0 else None
             best_mapping['count'] = -1

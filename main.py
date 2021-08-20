@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
     _validate_the_args()
 
-    POS_TAGS_WE_ARE_LEARNING: List[str] = [ '_',".", ",", '-LRB-', '-RRB-']
+    POS_TAGS_WE_ARE_LEARNING: List[str] = [".", ","]
 
 
     # call the main function
