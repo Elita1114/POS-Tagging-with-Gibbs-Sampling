@@ -1,7 +1,7 @@
-# gibbs-sampling-pos
+# Part Of Speech Tagging Using The Gibbs Sampling Algorithm
 
-#unsupervised learning in order to tag pos tags on corpus
+# Unsupervised way of learning to tag POS tags.
 
-nlp course: https://u.cs.biu.ac.il/~89-680/
+NLP course: https://u.cs.biu.ac.il/~89-680/
 
-presentation: https://u.cs.biu.ac.il/~89-680/unsup-lda.pdf
+Gibbs Sampling Presentation: https://u.cs.biu.ac.il/~89-680/unsup-lda.pdf
